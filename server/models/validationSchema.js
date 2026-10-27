@@ -23,7 +23,7 @@ export const updateTaskSchema = Joi.object({
 // Schema for submitting a task
 export const createSubmissionSchema = Joi.object({
   taskId: Joi.string().hex().length(24).required(),
-  submissionLink: Joi.string().uri().required(),
+  submissionLink: Joi.string().trim().uri({ scheme: ["http", "https"] }).required(),
 });
 
 // Schema for updating a submission's status

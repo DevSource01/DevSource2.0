@@ -16,6 +16,20 @@ import {
   ChevronRight
 } from "lucide-react";
 
+// Normalize a user-supplied link into an openable http(s) URL, or null if it can't be.
+// Browsers block other schemes (javascript:, data:, file:, ...) with about:blank#blocked.
+const getSafeLink = (link) => {
+  const raw = (link || "").trim();
+  if (!raw) return null;
+  const withScheme = /^[a-z][a-z\d+.-]*:/i.test(raw) ? raw : `https://${raw}`;
+  try {
+    const url = new URL(withScheme);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : null;
+  } catch {
+    return null;
+  }
+};
+
 export default function AdminSubmissions() {
   const navigate = useNavigate();
   const { user: authUser, loading: authLoading } = useAuth();
@@ -138,15 +152,22 @@ export default function AdminSubmissions() {
                          <Clock size={12} />
                          <span>{new Date(s.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <a 
-                        href={s.submissionLink ? (s.submissionLink.startsWith("http") ? s.submissionLink : `https://${s.submissionLink}`) : "#"} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-white hover:text-premium-accent transition-colors"
-                      >
-                         <ExternalLink size={12} />
-                         OPEN_ASSET
-                      </a>
+                      {getSafeLink(s.submissionLink) ? (
+                        <a
+                          href={getSafeLink(s.submissionLink)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={s.submissionLink}
+                          className="flex items-center gap-2 text-white hover:text-premium-accent transition-colors"
+                        >
+                           <ExternalLink size={12} />
+                           OPEN_ASSET
+                        </a>
+                      ) : (
+                        <span title="Link is not a valid http(s) URL" className="flex items-center gap-2 text-red-500 normal-case tracking-normal break-all">
+                           INVALID_LINK: {s.submissionLink || "—"}
+                        </span>
+                      )}
                    </div>
                 </div>
 

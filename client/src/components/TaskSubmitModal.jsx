@@ -15,7 +15,7 @@ export default function TaskSubmitModal({ open, onClose, onSubmit, task }) {
       await onSubmit({ taskId: task._id, submissionLink: link.trim() });
       onClose();
     } catch (err) {
-      setError("You have already submitted this task");
+      setError(err?.response?.data?.message || "Submission failed");
     } finally {
       setLoading(false);
     }

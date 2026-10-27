@@ -5,6 +5,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 import { taskAssignedTemplate } from "../templates/taskAssigned.js";
 import { taskStatusTemplate } from "../templates/taskStatus.js";
 import { BADGES } from "../config/badges.js";
+import { createSubmissionSchema } from "../models/validationSchema.js";
 
 // Create a new submission
 export const createSubmission = async (req, res, next) => {
@@ -14,6 +15,12 @@ export const createSubmission = async (req, res, next) => {
 
     if (!taskId || !submissionLink) {
       return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Only accept http(s) links so admins can actually open them
+    const { error: linkError } = createSubmissionSchema.validate({ taskId, submissionLink });
+    if (linkError) {
+      return res.status(400).json({ message: "Submission link must be a valid http(s) URL" });
     }
 
     const task = await taskModel.findById(taskId);
